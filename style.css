@@ -11,6 +11,7 @@
     color: white;
     cursor: url('assets/images/circle_white.png'), auto;
     scroll-behavior: smooth;
+     overflow-x: hidden;
 }
 
 .poppins-regular {
@@ -912,4 +913,5 @@ footer p {
     to {
         opacity: 1;
     }
+
 }
