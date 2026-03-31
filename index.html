@@ -1,457 +1,897 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ouattara Yao Sanhibou — Développeur Web & Mobile</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #16161f;
+    --accent: #7cffc4;
+    --accent2: #ff6b6b;
+    --accent3: #ffd93d;
+    --text: #e8e8f0;
+    --muted: #5a5a72;
+    --border: #1e1e2e;
+  }
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Luckiest+Guy&family=Orbitron:wght@400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-        rel="stylesheet">
-    <title>Porfolio-Ouattara Yao Sanhibou</title>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* CUSTOM CURSOR */
+  .cursor {
+    width: 12px; height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s ease;
+    mix-blend-mode: difference;
+  }
+  .cursor-trail {
+    width: 36px; height: 36px;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.35s ease;
+    opacity: 0.4;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.5rem 4rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+  }
+  .nav-links {
+    display: flex; gap: 2.5rem; list-style: none;
+  }
+  .nav-links a {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center;
+    padding: 0 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    align-items: center;
+  }
+
+  .hero-tag {
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    margin-bottom: 2rem;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero-name {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3rem, 6vw, 5.5rem);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    animation: fadeUp 0.6s ease 0.1s both;
+  }
+  .hero-name span {
+    display: block;
+    color: var(--accent);
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 0.7em;
+  }
+
+  .hero-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 1rem;
+    color: var(--muted);
+    margin-top: 1.5rem;
+    letter-spacing: 0.1em;
+    animation: fadeUp 0.6s ease 0.2s both;
+  }
+  .hero-title strong { color: var(--accent3); font-weight: 500; }
+
+  .hero-desc {
+    color: #8888aa;
+    line-height: 1.8;
+    font-size: 0.9rem;
+    margin-top: 1.5rem;
+    max-width: 480px;
+    animation: fadeUp 0.6s ease 0.3s both;
+  }
+
+  .hero-cta {
+    display: flex; gap: 1rem; margin-top: 2.5rem;
+    animation: fadeUp 0.6s ease 0.4s both;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    padding: 0.85rem 2rem;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: #fff; transform: translateY(-2px); }
+  .btn-ghost {
+    border: 1px solid var(--muted);
+    color: var(--muted);
+    padding: 0.85rem 2rem;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-block;
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .hero-visual {
+    display: flex; justify-content: center; align-items: center;
+    animation: fadeUp 0.6s ease 0.2s both;
+    position: relative;
+  }
+
+  .photo-frame {
+    width: 340px; height: 420px;
+    position: relative;
+  }
+  .photo-frame::before {
+    content: '';
+    position: absolute;
+    top: 12px; left: 12px;
+    right: -12px; bottom: -12px;
+    border: 1px solid var(--accent);
+    z-index: 0;
+    opacity: 0.4;
+  }
+  .photo-frame img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    position: relative; z-index: 1;
+    filter: grayscale(20%) contrast(1.1);
+  }
+  .photo-placeholder {
+    width: 100%; height: 100%;
+    background: var(--card);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: relative; z-index: 1;
+    border: 1px solid var(--border);
+  }
+  .photo-initials {
+    font-family: 'Syne', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .photo-sub {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 1rem;
+  }
+
+  .floating-badge {
+    position: absolute;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 0.75rem 1.2rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+  }
+  .badge-1 { bottom: 30px; left: -40px; }
+  .badge-2 { top: 30px; right: -40px; }
+  .badge-dot {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5rem;
+  }
+
+  /* SCROLLING TICKER */
+  .ticker {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    padding: 1rem 0;
+    background: var(--surface);
+  }
+  .ticker-inner {
+    display: flex; gap: 0;
+    animation: ticker 18s linear infinite;
+    white-space: nowrap;
+  }
+  .ticker-item {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 3rem;
+    flex-shrink: 0;
+  }
+  .ticker-item span { color: var(--accent); margin-right: 1rem; }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* SECTIONS */
+  section { padding: 6rem 4rem; position: relative; }
+  .section-header {
+    display: flex; align-items: center; gap: 1.5rem;
+    margin-bottom: 3.5rem;
+  }
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 3.5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* SKILLS */
+  .skills-section { background: var(--surface); }
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    max-width: 1200px; margin: 0 auto;
+  }
+  .skill-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .skill-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  .skill-card:hover::before { transform: scaleX(1); }
+  .skill-card:hover { border-color: rgba(124,255,196,0.2); transform: translateY(-4px); }
+  .skill-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  .skill-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .skill-desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* TECH STACK */
+  .tech-stack { max-width: 1200px; margin: 3rem auto 0; }
+  .tech-title {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .tech-pills {
+    display: flex; flex-wrap: wrap; gap: 0.75rem;
+  }
+  .tech-pill {
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 0.5rem 1.2rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--text);
+    transition: all 0.2s;
+    font-family: 'DM Mono', monospace;
+    cursor: default;
+  }
+  .tech-pill:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(124,255,196,0.05);
+  }
+  .tech-pill.featured {
+    border-color: rgba(124,255,196,0.4);
+    color: var(--accent);
+  }
+
+  /* PROJECTS */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.5rem;
+    max-width: 1200px; margin: 0 auto;
+  }
+  .project-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+  .project-card:hover { border-color: rgba(124,255,196,0.3); transform: translateY(-6px); }
+  .project-thumb {
+    height: 200px;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .project-thumb::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: rgba(124,255,196,0.05);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .project-card:hover .project-thumb::after { opacity: 1; }
+  .project-body { padding: 1.5rem; }
+  .project-tag {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+  .project-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+  .project-desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
+  }
+  .project-tech {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+  }
+  .project-tech span {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    padding: 0.3rem 0.7rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* EXPERIENCE & FORMATION */
+  .timeline { max-width: 800px; margin: 0 auto; }
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    position: relative;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 160px;
+    top: 8px; bottom: -2rem;
+    width: 1px;
+    background: var(--border);
+  }
+  .timeline-item:last-child::before { display: none; }
+  .timeline-date {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    text-align: right;
+    padding-top: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+  .timeline-content { padding-left: 2rem; position: relative; }
+  .timeline-content::before {
+    content: '';
+    position: absolute;
+    left: -4px; top: 8px;
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  .timeline-role {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 0.5rem;
+  }
+  .timeline-company {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+  .timeline-desc {
+    font-size: 0.82rem;
+    color: #7070a0;
+    line-height: 1.75;
+  }
+
+  /* CONTACT */
+  .contact-section { background: var(--surface); }
+  .contact-inner {
+    max-width: 900px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+  .contact-heading {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+  }
+  .contact-heading em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    color: var(--accent);
+  }
+  .contact-sub {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  .contact-links { display: flex; flex-direction: column; gap: 1rem; }
+  .contact-link {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--text);
+    font-size: 0.82rem;
+    transition: all 0.2s;
+  }
+  .contact-link:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateX(4px);
+  }
+  .contact-link-icon {
+    font-size: 1.1rem;
+    width: 24px;
+    text-align: center;
+  }
+  .contact-link-label {
+    flex: 1;
+    letter-spacing: 0.05em;
+  }
+  .contact-link-arrow { color: var(--muted); font-size: 0.8rem; }
+  .contact-link:hover .contact-link-arrow { color: var(--accent); }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 4rem;
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--bg);
+  }
+  .footer-copy {
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+  .footer-built {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+  .footer-built span { color: var(--accent); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    nav { padding: 1.2rem 1.5rem; }
+    .nav-links { gap: 1.5rem; }
+    .hero { padding: 5rem 1.5rem 3rem; }
+    .hero-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .hero-visual { order: -1; }
+    .photo-frame { width: 220px; height: 280px; }
+    .badge-1, .badge-2 { display: none; }
+    section { padding: 4rem 1.5rem; }
+    .contact-inner { grid-template-columns: 1fr; gap: 2rem; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; padding: 1.5rem; }
+    .timeline-item { grid-template-columns: 1fr; }
+    .timeline-item::before { display: none; }
+    .timeline-date { text-align: left; }
+    .timeline-content { padding-left: 1rem; }
+  }
+</style>
 </head>
-
 <body>
-    <div class="navbar">
-        <div class="group1">
-            <h1><span>Ouattara </span><span>Yao Sanhibou</span></h1>
-        </div>
-        <div class="group2">
-            <a href="#home">Accueil</a>
-            <a href="#about">A Propos</a>
-            <a href="#skills">Compétences</a>
-            <a href="#services">Services</a>
-            <a href="#projects">Projets</a>
-            <a href="#contacts">Contacts</a>
-        </div>
-        <div class="group3"><button class="cv"><img src="assets/images/download.png" alt="downloadicon">Télecharger
-                CV</button></div>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Gasici Mito dev</div>
+  <ul class="nav-links">
+    <li><a href="#skills" onclick="document.getElementById('skills').scrollIntoView({behavior:'smooth'});return false;">Compétences</a></li>
+    <li><a href="#projects" onclick="document.getElementById('projects').scrollIntoView({behavior:'smooth'});return false;">Projets</a></li>
+    <li><a href="#parcours" onclick="document.getElementById('parcours').scrollIntoView({behavior:'smooth'});return false;">Parcours</a></li>
+    <li><a href="#contact" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'});return false;">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid">
+    <div class="hero-content">
+      <div class="hero-tag">Disponible pour missions</div>
+      <h1 class="hero-name">
+        Ouattara<br>Yao Sanhibou
+        <span>Developer</span>
+      </h1>
+      <p class="hero-title"><strong>Web & Mobile</strong> — Abidjan, Côte d'Ivoire</p>
+      <p class="hero-desc">
+        Passionné par le développement web et mobile, je crée des applications performantes et des expériences utilisateur fluides. Du frontend au mobile, je transforme les idées en produits concrets.
+      </p>
+      <div class="hero-cta">
+        <a href="#contact" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'});return false;" class="btn-primary">Me contacter</a>
+        <a href="https://gasicidevshome.github.io/Oauttara-Yao-Sanhibou-Porfolio/" target="_blank" rel="noopener noreferrer" class="btn-ghost">Voir projets</a>
+      </div>
     </div>
-    <header id="home">
-        <div class="description">
-            <div class="left">
-                <p>
-                    <span>Je suis</span> <br>
-                    <span>Ouattara </span>
-                    <span> Yao Sanhibou</span>
-                    <br><span>Développeur Web et Mobile</span>
-                </p>
-                <p>
-                    Passionné par le développement web et mobile , j'ai une solide expérience en création
-                    d'applications, optimisation des performances et intégration de solutions techniques. Mes
-                    connaissances en Frontend et Backend mes permettent de concevoir une application web ou mobile
-                    complète et bien optimisée .
-                </p>
-                <div class="call-btn">
-                    <a href="#contacts">Me contacter </a>
-                    <a href="#projects">Voir mes projets </a>
-                </div>
-            </div>
-            <div class="right"><img src="assets/images/profil.JPG" alt=""></div>
+    <div class="hero-visual">
+      <div class="photo-frame">
+        <div class="photo-placeholder">
+          <div class="photo-initials">Gasici Mito</div>
+          <div class="photo-sub">Développeur</div>
         </div>
-    </header>
-    <div id="about">
-        <h1 class="title">A propos de moi </h1>
-        <p>Développeur full-stack web & mobile (22 ans), basé en Côte d’Ivoire — expérience pratique depuis 2020.
-            J’interviens sur l’ensemble du cycle : spécification fonctionnelle, architecture back/front, intégration,
-            tests et déploiement. <br>
-            Ce que je fournis :
-        </p><br>
-        <ul>
-            <li>Frontend : HTML5, CSS moderne (responsive, animations légères), JavaScript vanilla/ES6 — UI claires et
-                performantes.
-            </li>
-            <li>Backend & APIs : PHP (REST), Python (scripts, automations, petites API), bonnes pratiques sécurité et
-                optimisation.</li>
-            <li>Mobile : Dart + Flutter pour apps cross-platform fluides ; connaissances en Python pour
-                outils/automatisations (Kivy/Tkinter selon besoin).</li>
-            <li>Outils & pratiques : gestion de versions (Git), structuration modulaire du code, documentation, tests
-                basiques et déploiement continu quand demandé.</li>
-        </ul>
-        <p>Exemples d’impact : amélioration de l’UX entraînant +X% de conversion (exemples dans la section projets),
-            automatisation de tâches répétitives via scripts Python, et intégrations API stables pour synchronisation de
-            données multi-sites.
-            Si vous cherchez un développeur pragmatique qui allie autonomie technique et sens produit — parlons de votre
-            projet. Je fournis aussi estimations techniques et prototypes rapides pour valider les choix dès les
-            premières étapes.
-        </p>
-        <div class="about-card">
-            <div class="card">
-                <h1>WEB</h1>
-                <ul>
-                    <li>HTML</li>
-                    <li>CSS</li>
-                    <li>JAVASCRIPT</li>
-                    <li>PHP</li>
-                </ul>
-            </div>
-            <div class="card">
-                <h1>MOBILE</h1>
-                <ul>
-                    <li>FLUTTER</li>
-                    <li>PYTHON</li>
-                    <li>JAVASCRIPT</li>
-                    <li>PHP</li>
-                </ul>
-            </div>
-            <div class="card">
-                <h1>DESKTOP</h1>
-                <ul>
-                    <li>FLUTTER</li>
-                    <li>PYTHON</li>
-                    <li>PHP</li>
-                </ul>
-            </div>
+        <div class="floating-badge badge-1">
+          <span class="badge-dot"></span>7 ans d'apprentissage
         </div>
+        <div class="floating-badge badge-2">
+          <span class="badge-dot"></span>Abidjan, CI
+        </div>
+      </div>
     </div>
-    <div id="skills">
-        <h1 class="title">Mes Compétences</h1>
-        <div class="skills-card">
-            <div class="card1">
-                <h2>FRONTEND </h2>
-                <h4>HTML & CSS</h4>
-                <section class="percent">
-                    <section class="per-total">
-                        <span class="per-bar_one"></span>
-                    </section>
-                    <span>90%</span>
-                </section>
-                <h4>JAVASCRIPT</h4>
-                <section class="percent">
-                    <section class="per-total">
-                        <span class="per-bar_two"></span>
-                    </section>
-                    <span>60%</span>
-                </section>
-                <h4>FLUTTER</h4>
-                <section class="percent">
-                    <section class="per-total">
-                        <span class="per-bar_three"></span>
-                    </section>
-                    <span>70%</span>
-                </section>
-            </div>
-            <div class="card2">
-                <h2>BACKEND </h2>
-                <h4>PHP</h4>
-                <section class="percent">
-                    <section class="per-total">
-                        <span class="per-bar_one"></span>
-                    </section>
-                    <span>80%</span>
-                </section>
-                <h4>PYTHON</h4>
-                <section class="percent">
-                    <section class="per-total">
-                        <span class="per-bar_two"></span>
-                    </section>
-                    <span>50%</span>
-                </section>
-                <h4>FIREBASE</h4>
-                <section class="percent">
-                    <section class="per-total">
-                        <span class="per-bar_three"></span>
-                    </section>
-                    <span>85%</span>
-                </section>
-                <h4>MySQL</h4>
-                <section class="percent">
-                    <section class="per-total">
-                        <span class="per-bar_for"></span>
-                    </section>
-                    <span>90%</span>
-                </section>
-            </div>
-            <div class="card3">
-                <h2>MOBILE / DESKTOP</h2>
-                <h4>FLUTTER</h4>
-                <section class="percent">
-                    <section class="per-total">
-                        <span class="per-bar_one"></span>
-                    </section>
-                    <span>70%</span>
-                </section>
-                <h4>JAVASCRIPT</h4>
-                <section class="percent">
-                    <section class="per-total">
-                        <span class="per-bar_two"></span>
-                    </section>
-                    <span>30%</span>
-                </section>
-                <h4>KIVY</h4>
-                <section class="percent">
-                    <section class="per-total">
-                        <span class="per-bar_three"></span>
-                    </section>
-                    <span>80%</span>
-                </section>
-                <h4>TKINTER</h4>
-                <section class="percent">
-                    <section class="per-total">
-                        <span class="per-bar_for"></span>
-                    </section>
-                    <span>70%</span>
-                </section>
-                <h4>CUSTOMTKINTER</h4>
-                <section class="percent">
-                    <section class="per-total">
-                        <span class="per-bar_five"></span>
-                    </section>
-                    <span>70%</span>
-                </section>
-            </div>
-            <div class="card4">
-                <h2>OUTILS </h2>
-                <h4>VS CODE </h4>
-                <section class="percent">
-                    <section class="per-total">
-                        <span class="per-bar_one"></span>
-                    </section>
-                    <span>95%</span>
-                </section>
-                <h4>GIT & GITHUB</h4>
-                <section class="percent">
-                    <section class="per-total">
-                        <span class="per-bar_two"></span>
-                    </section>
-                    <span>60%</span>
-                </section>
-            </div>
-        </div>
+  </div>
+</section>
 
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item"><span>★</span>HTML / CSS</span>
+    <span class="ticker-item"><span>★</span>JavaScript</span>
+    <span class="ticker-item"><span>★</span>PHP</span>
+    <span class="ticker-item"><span>★</span>Python</span>
+    <span class="ticker-item"><span>★</span>Flutter / Dart</span>
+    <span class="ticker-item"><span>★</span>MySQL</span>
+    <span class="ticker-item"><span>★</span>Développement Mobile</span>
+    <span class="ticker-item"><span>★</span>Gestion de Projet</span>
+    <span class="ticker-item"><span>★</span>HTML / CSS</span>
+    <span class="ticker-item"><span>★</span>JavaScript</span>
+    <span class="ticker-item"><span>★</span>PHP</span>
+    <span class="ticker-item"><span>★</span>Python</span>
+    <span class="ticker-item"><span>★</span>Flutter / Dart</span>
+    <span class="ticker-item"><span>★</span>MySQL</span>
+    <span class="ticker-item"><span>★</span>Développement Mobile</span>
+    <span class="ticker-item"><span>★</span>Gestion de Projet</span>
+  </div>
+</div>
+
+<!-- SKILLS -->
+<section id="skills" class="skills-section">
+  <div class="section-header reveal">
+    <span class="section-num">01 /</span>
+    <h2 class="section-title">Compétences</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="skills-grid">
+    <div class="skill-card reveal">
+      <div class="skill-icon">🌐</div>
+      <div class="skill-name">Développement Web</div>
+      <div class="skill-desc">Création d'interfaces web modernes et responsives avec HTML, CSS, JavaScript et PHP. Intégration de bases de données MySQL pour des applications dynamiques.</div>
     </div>
-
-    <div id="services">
-        <h1 class="title">Mes Services</h1>
-        <p class="para-titre">Je propose une gamme complète de services de développement Full-Stack et mobile, de la
-            conception à la mise
-            en production, en passant par la maintenance et l'optimisation.</p>
-        <div class="services-card">
-            <div class="card">
-                <h1>Développement Web Frontend</h1>
-                <p>Créer des expériences web esthétiques et fonctionnelles est mon point fort. En utilisant les
-                    dernières technologies et les meilleures pratiques, je conçois et crée des sites web qui captivent
-                    et engagent les utilisateurs.
-
-                </p>
-                <ul>
-                    <li>Sites web responsives et modernes</li>
-                    <li>Applications Flutter performantes</li>
-                    <li>Interfaces utilisateur intuitives
-                    </li>
-                    <li>Optimisation des performances
-                    </li>
-                </ul>
-            </div>
-            <div class="card">
-                <h1>Développement Web Fullstack</h1>
-                <p>Création de sites web dynamiques et responsives adaptés à tous les supports. Maîtrise des
-                    technologies front-end et back-end pour des solutions complètes.
-                </p>
-                <ul>
-                    <li> Architecture complète frontend/backend
-                    </li>
-                    <li> APIs RESTful sécurisées
-                    </li>
-                    <li> Intégration de bases de données
-                    </li>
-                    <li>Déploiement et maintenance</li>
-                </ul>
-            </div>
-            <div class="card">
-                <h1>E-commerce & Solutions Numériques</h1>
-                <p>Conception et déploiement de plateformes de commerce en ligne intégrant des fonctionnalités complètes
-                    avec des systèmes de paiement sécurisés.
-                </p>
-                <ul>
-                    <li>Plateformes e-commerce complètes
-                    </li>
-                    <li>Systèmes de paiement intégrés
-                    </li>
-                    <li>Gestion des stocks et commandes
-                    </li>
-                    <li>Optimisation des conversions</li>
-                </ul>
-            </div>
-            <div class="card">
-                <h1>Gestion de Bases de Données </h1>
-                <p>Mise en place et gestion de bases de données NoSQL et relationnelles. Maîtrise des opérations
-                    CRUD et optimisation des performances.
-                </p>
-                <ul>
-                    <li>Conception de schémas optimisés
-                    </li>
-                    <li>MySQL et bases relationnelles
-                    <li>Optimisation des requêtes
-                    </li>
-                    <li>Sauvegardes et sécurité
-                    </li>
-                </ul>
-            </div>
-            <div class="card">
-                <h1>Programmation & Automatisation</h1>
-                <p>Développement de scripts et d'applications pour automatiser des tâches. Utilisation d'APIs RESTful
-                    pour connecter des services externes.
-                </p>
-                <ul>
-                    <li>Scripts d'automatisation
-                    </li>
-                    <li>Intégration d'APIs tierces
-                    </li>
-                    <li>Solutions sur mesure
-                    </li>
-                    <li>Optimisation des processus</li>
-                </ul>
-            </div>
-            <div class="card">
-                <h1>Applications Mobiles & Desktop</h1>
-                <p>Développement d'applications mobiles cross-platform avec Flutter et d'applications desktop avec
-                    Python. Interfaces utilisateur modernes et performantes.
-                </p>
-                <ul>
-                    <li>Applications Flutter pour iOS et Android
-                    </li>
-                    <li>Applications desktop avec Kivy/Tkinter
-                    </li>
-                    <li>Interfaces utilisateur intuitives
-                    </li>
-                    <li>Optimisation des performances</li>
-                </ul>
-            </div>
-            <div class="ready-for-ptoject">
-                <h1>Prêt pour votre projet ?</h1>
-                <p>Contactez-moi pour discuter de vos besoins et voir comment je peux vous aider à atteindre vos
-                    objectifs
-                    numériques.</p>
-                <a href="#contacts">Me contacter</a>
-            </div>
-
-        </div>
+    <div class="skill-card reveal">
+      <div class="skill-icon">📱</div>
+      <div class="skill-name">Développement Mobile</div>
+      <div class="skill-desc">Conception d'applications mobiles cross-platform avec Flutter (Dart) et Python. Focus sur l'UX et les performances pour iOS et Android.</div>
     </div>
-    <div id="projects">
-        <h1 class="title">Mes Projets</h1>
-        <div class="projects-card">
-            <div class="card">
-                <img src="https://gasicidevshome.github.io/btp-epi/src/assets/epi-collection.jpg" alt="">
-                <h2>Site E-commerce</h2>
-                <p>Développement d'une plateforme e-commerce complète avec gestion des produits, panier et paiement
-                    sécurisé.</p>
-                <section class="lang-used">
-                    <span>HTML</span>
-                    <span>CSS</span>
-                    <span>JAVASCRIPT</span>
-                    <span>PHP</span>
-                    <span>MYSQL</span>
-                </section>
-                <a href="https://gasicidevshome.github.io/btp-epi/">Voir le projet</a>
-            </div>
-            <div class="card">
-                <img src="assets/images/chat.jpg" alt="">
-                <h2>Application Mobile de Chat</h2>
-                <p>Création d'une application mobile cross-platform pour discuter en équipe.
-                </p>
-                <section class="lang-used">
-                    <span>Dart</span>
-                    <span>Flutter</span>
-                    <span>PHP</span>
-                    <span>MYSQL</span>
-                </section>
-                <a href="https://gasicidevshome.github.io/legourmet/">Voir le projet</a>
-            </div>
-            <div class="card">
-                <img src="https://i.pinimg.com/736x/61/d4/2b/61d42bc6a1eef03d93473a751bd0d4b4.jpg" alt="">
-                <h2>Application web pour un restaurant</h2>
-                <p>Conception d'une application pour un restaurant.</p>
-                <section class="lang-used">
-                    <span>HTML</span>
-                    <span>CSS</span>
-                    <span>JAVASCRIPT</span>
-                </section>
-                <a href="https://gasicidevshome.github.io/legourmet/">Voir le projet</a>
-            </div>
-            <div class="card">
-                <img src="assets/images/poduct_app.jpg" alt="">
-                <h2>Application Desktop de Productivité</h2>
-                <p>Développement d'une application desktop avec Python pour améliorer la productivité et automatiser
-                    les tâches répétitives.</p>
-                <section class="lang-used">
-                    <span>Python</span>
-                    <span>Kivy</span>
-                    <span>MYSQL</span>
-                </section>
-                <a href="#">Voir le projet</a>
-            </div>
-            <div class="ready-for-ptoject">
-                <h1>Prêt pour votre projet ?</h1>
-                <p>Collaborons ensemble pour donner vie à vos idées et créer des solutions innovantes qui dépassent vos
-                    attentes.</p>
-                <a href="#contacts">Me contacter</a>
-            </div>
-        </div>
+    <div class="skill-card reveal">
+      <div class="skill-icon">🗄️</div>
+      <div class="skill-name">Base de Données</div>
+      <div class="skill-desc">Gestion et optimisation des bases de données relationnelles MySQL. Modélisation des données et requêtes SQL pour des performances optimales.</div>
     </div>
-    <div id="contacts">
-        <h1 class="title">Discutons de votre projet </h1>
-        <p class="para-titre">Vous avez un projet en tête ou souhaitez simplement échanger ? N'hésitez pas à me
-            contacter via le formulaire ci-dessous ou par email. Je suis toujours ouvert à de nouvelles opportunités et
-            collaborations.</p>
-        <br>
-        <div class="contact-card">
-            <div class="card info">
-                <h2>Informations de Contact</h2>
-                <p>Vous pouvez également me joindre via les informations ci-dessous :</p>
-                <ul>
-                    <li>
-                        <strong>Email : </strong>
-                        <a href="mailto:gasicihome@gmail.com">gasicihome@gmail.com</a>
-                    </li>
-                    <li>
-                        <strong>Télephone / WhatsApp / Télegramme :</strong>
-                        <a href="tel:+2250707070707">+225 07 98 41 65 33</a>
-                    </li>
-                    <li>
-                        <strong>Tiktok :</strong>
-                        <a href="https://www.tiktok.com/@mito4708?is_from_webapp=1&sender_device=pc">Gasici PS Dev</a>
-                    </li>
-                    <li>
-                        <strong>Facebook :</strong>
-                        <a href="https://web.facebook.com/ouattara.said.12/">Gasici PSD </a>
-                    </li>
-
-                </ul>
-                <section class="localisation">
-                    <img src="assets/images/moi.JPG" alt="">
-                    <section class="text">
-                        <h4>Localisation</h4>
-                        <p>Côte d'Ivoire, Abidjan, Yopougon</p>
-                    </section>
-            </div>
-
-            <div class="card">
-                <form method="POST">
-                    <label for="name">Nom</label>
-                    <input type="text" id="name" name="name" required>
-
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required>
-
-                    <label for="message">Message</label>
-                    <textarea id="message" name="message" rows="4" required></textarea>
-
-                    <button type="submit" class="send">Envoyer</button>
-                </form>
-            </div>
-
-        </div>
+    <div class="skill-card reveal">
+      <div class="skill-icon">🚀</div>
+      <div class="skill-name">Gestion de Projet</div>
+      <div class="skill-desc">Organisation et suivi de projets techniques de bout en bout. Capacité à prioriser, résoudre des problèmes complexes et livrer dans les délais.</div>
     </div>
-    <footer>
-        <p>&copy; 2025 Porfolio de Ouattara Yao Sanhibou. Tous droits réservés.</p>
-        <p>Développé par Ouattara Yao Sanhibou</p>
+  </div>
 
-    </footer>
-    <script src="app.js"></script>
+  <div class="tech-stack reveal">
+    <div class="tech-title">Stack Technique</div>
+    <div class="tech-pills">
+      <div class="tech-pill featured">HTML5</div>
+      <div class="tech-pill featured">CSS3</div>
+      <div class="tech-pill featured">JavaScript</div>
+      <div class="tech-pill">PHP</div>
+      <div class="tech-pill featured">Python</div>
+      <div class="tech-pill featured">Flutter</div>
+      <div class="tech-pill">Dart</div>
+      <div class="tech-pill">MySQL</div>
+      <div class="tech-pill">Git</div>
+      <div class="tech-pill">UI/UX Design</div>
+      <div class="tech-pill">REST API</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-header reveal">
+    <span class="section-num">02 /</span>
+    <h2 class="section-title">Projets</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="projects-grid">
+    <div class="project-card reveal">
+      <div class="project-thumb" style="background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);">
+        <span>📋</span>
+      </div>
+      <div class="project-body">
+        <div class="project-tag">Application Mobile</div>
+        <div class="project-name">Gestionnaire de Tâches</div>
+        <div class="project-desc">Application mobile de gestion de tâches avec suivi en temps réel. Interface intuitive conçue pour une productivité maximale avec support multi-langues.</div>
+        <div class="project-tech">
+          <span>Flutter</span>
+          <span>Dart</span>
+          <span>Python</span>
+        </div>
+      </div>
+    </div>
+    <div class="project-card reveal">
+      <div class="project-thumb" style="background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);">
+        <span>🌐</span>
+      </div>
+      <div class="project-body">
+        <div class="project-tag">Application Web</div>
+        <div class="project-name">Portfolio Interactif</div>
+        <div class="project-desc">Portfolio web moderne présentant projets et compétences. Interface responsive avec animations CSS avancées et optimisation des performances.</div>
+        <div class="project-tech">
+          <span>HTML</span>
+          <span>CSS</span>
+          <span>JavaScript</span>
+        </div>
+      </div>
+    </div>
+    <div class="project-card reveal">
+      <div class="project-thumb" style="background: linear-gradient(135deg, #0d1b2a, #1b2838, #2d4a6e);">
+        <span>🛒</span>
+      </div>
+      <div class="project-body">
+        <div class="project-tag">Plateforme E-commerce</div>
+        <div class="project-name">App Web Dynamique</div>
+        <div class="project-desc">Application web dynamique avec gestion backend PHP et base de données MySQL. Système d'authentification, dashboard admin et API REST.</div>
+        <div class="project-tech">
+          <span>PHP</span>
+          <span>MySQL</span>
+          <span>JavaScript</span>
+          <span>CSS</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARCOURS -->
+<section id="parcours">
+  <div class="section-header reveal">
+    <span class="section-num">03 /</span>
+    <h2 class="section-title">Parcours</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="timeline">
+    <div class="timeline-item reveal">
+      <div class="timeline-date">2018 — 2025</div>
+      <div class="timeline-content">
+        <div class="timeline-role">Développeur Web & Mobile</div>
+        <div class="timeline-company">Autodidacte — Apprentissage continu</div>
+        <div class="timeline-desc">Formation intensive par la pratique : développement web avec HTML, CSS, JavaScript et PHP, gestion de bases de données MySQL, et développement mobile avec Python et Flutter. Plus de 7 ans d'apprentissage autonome via YouTube, documentation officielle et projets personnels.</div>
+      </div>
+    </div>
+    <div class="timeline-item reveal">
+      <div class="timeline-date">2024</div>
+      <div class="timeline-content">
+        <div class="timeline-role">Baccalauréat D</div>
+        <div class="timeline-company">Groupe Scolaire Akanji — Yopougon, Abidjan</div>
+        <div class="timeline-desc">Obtention du Baccalauréat série D (Sciences). Formation scientifique rigoureuse développant la logique analytique et les capacités de résolution de problèmes.</div>
+      </div>
+    </div>
+    <div class="timeline-item reveal">
+      <div class="timeline-date">2018</div>
+      <div class="timeline-content">
+        <div class="timeline-role">Début du parcours Tech</div>
+        <div class="timeline-company">Auto-formation</div>
+        <div class="timeline-desc">Premiers pas dans le développement web. Découverte de la programmation et passion pour la création d'applications. Début d'un apprentissage continu et structuré.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="contact-section">
+  <div class="contact-inner">
+    <div class="reveal">
+      <h2 class="contact-heading">
+        Travaillons<br><em>ensemble</em>
+      </h2>
+      <p class="contact-sub">
+        Disponible pour des missions freelance, des projets collaboratifs ou des opportunités à temps plein. N'hésitez pas à me contacter pour discuter de votre projet.
+      </p>
+    </div>
+    <div class="contact-links reveal">
+      <a href="tel:+2250798416533" class="contact-link">
+        <span class="contact-link-icon">📞</span>
+        <span class="contact-link-label">+225 0798416533</span>
+        <span class="contact-link-arrow">→</span>
+      </a>
+      <a href="mailto:gasicihome@gmail.com" class="contact-link">
+        <span class="contact-link-icon">✉️</span>
+        <span class="contact-link-label">gasicihome@gmail.com</span>
+        <span class="contact-link-arrow">→</span>
+      </a>
+      <a href="https://gasicidevshome.github.io/Oauttara-Yao-Sanhibou-Porfolio/" target="_blank" rel="noopener noreferrer" class="contact-link">
+        <span class="contact-link-icon">🔗</span>
+        <span class="contact-link-label">Portfolio GitHub</span>
+        <span class="contact-link-arrow">→</span>
+      </a>
+      <div class="contact-link" style="cursor:default;">
+        <span class="contact-link-icon">📍</span>
+        <span class="contact-link-label">Abidjan, Yopougon — CI</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-copy">© 2025 Gasici Mito dev. Tous droits réservés.</div>
+  <div class="footer-built">Développeur <span>Web & Mobile</span> — Abidjan</div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const trail = document.getElementById('cursorTrail');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX - 6 + 'px';
+    cursor.style.top = e.clientY - 6 + 'px';
+    setTimeout(() => {
+      trail.style.left = e.clientX - 18 + 'px';
+      trail.style.top = e.clientY - 18 + 'px';
+    }, 80);
+  });
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.style.transform = 'scale(2.5)');
+    el.addEventListener('mouseleave', () => cursor.style.transform = 'scale(1)');
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
 </body>
-
 </html>
