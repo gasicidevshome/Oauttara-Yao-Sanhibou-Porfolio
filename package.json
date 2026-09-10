@@ -1,0 +1,30 @@
+{
+  "name": "gasici-portfolio-admin",
+  "version": "1.0.0",
+  "description": "Admin dashboard for Gasici Mito Dev Portfolio",
+  "main": "migrate-data.js",
+  "scripts": {
+    "migrate": "node migrate-data.js",
+    "dev": "npx serve .",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "portfolio",
+    "admin",
+    "supabase",
+    "alpinejs",
+    "gsap"
+  ],
+  "author": "Gasici Mito Dev (Ouattara Yao Sanhibou)",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "serve": "^14.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
