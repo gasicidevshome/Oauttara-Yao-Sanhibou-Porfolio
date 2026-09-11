@@ -3,29 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Login | Gasici Mito Dev</title>
+<title>Admin | Gasici Mito Dev</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  --bg:#0d0d18;--surface:rgba(18,18,40,.85);--text:#e0e0f5;
-  --muted:#6060a0;--border:rgba(255,255,255,.08);--card:rgba(18,18,45,.9);
+  --bg:#0d0d18;--surface:rgba(18,18,40,.9);--text:#e0e0f5;
+  --muted:#6060a0;--border:rgba(255,255,255,.08);--card:rgba(18,18,45,.95);
   --g:0,200,110;--b:80,130,255;--p:150,80,255;--pk:200,80,140;--y:200,160,30;
+  --radius:14px;--radius-sm:8px;
 }
-*, *::before, *::after{box-sizing:border-box;margin:0;padding:0}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;overflow:hidden}
 body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 a{color:inherit;text-decoration:none;cursor:none}
 button{cursor:none;border:none;background:none;font:inherit;color:inherit}
-input{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.75rem 1rem;width:100%;outline:none}
+input{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.875rem 1rem;width:100%;outline:none;transition:border-color .2s,box-shadow .2s}
 input:focus{border-color:rgba(var(--g),.6);box-shadow:0 0 0 3px rgba(var(--g),.15)}
 ::placeholder{color:var(--muted)}
 label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.5rem;font-weight:600}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;border-radius:6px;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;transition:all .2s;width:100%}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.875rem 1.5rem;border-radius:var(--radius-sm);font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;transition:all .2s;width:100%}
 .btn-primary{background:rgba(var(--g),1);color:#061210;border:none}
 .btn-primary:hover:not(:disabled){background:#fff;transform:translateY(-1px);box-shadow:0 4px 16px rgba(var(--g),.3)}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:rgba(var(--g),.4);color:rgba(var(--g),1)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid transparent}
+.btn-ghost:hover{color:rgba(var(--g),1);background:rgba(var(--g),.08)}
 .input-group{position:relative}
 .input-icon{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
 .input-group input{padding-left:3rem}
@@ -34,15 +40,21 @@ label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em
 .logo{font-weight:900;font-size:clamp(1.5rem,4vw,2.5rem);letter-spacing:-.04em;line-height:1}
 .logo em{color:transparent;-webkit-text-stroke:2px var(--text);font-style:normal}
 .subtitle{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:.5rem}
-.alert{padding:.75rem 1rem;border-radius:6px;font-size:.8rem;display:flex;align-items:center;gap:.5rem}
+.alert{padding:.75rem 1rem;border-radius:var(--radius-sm);font-size:.8rem;display:flex;align-items:center;gap:.5rem;animation:slideIn .3s ease-out}
 .alert-error{background:rgba(255,60,90,.1);border:1px solid rgba(255,60,90,.3);color:rgba(255,60,90,1)}
 .alert-error svg{color:rgba(255,60,90,1)}
 .remember{display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--muted);cursor:pointer}
 .remember input{width:auto;accent-color:rgba(var(--g),1)}
 .forgot{text-align:right;font-size:.75rem;color:var(--muted);transition:color .2s}
 .forgot:hover{color:rgba(var(--g),1)}
+@keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:rgba(var(--g),1);border-radius:50%;animation:spin .8s linear infinite}
+.shake{animation:shake .4s ease-in-out}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
@@ -52,19 +64,19 @@ label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em
 
 <div class="min-h-screen flex items-center justify-center p-4 relative z-10" x-data="loginApp()" x-init="init()">
 <div class="w-full max-w-md">
-<div class="text-center mb-10">
+<div class="text-center mb-10" x-show="!mfaRequired" x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0" x-transition:leave="transition-opacity duration-200" x-transition:leave-end="opacity-0">
 <div class="logo">Gasici <em>Mito</em> Dev</div>
 <div class="subtitle">Admin Dashboard</div>
 </div>
 
-<div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-8" x-show="!mfaRequired" x-transition>
+<div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-8" x-show="!mfaRequired" x-transition:enter="transition-opacity duration-300 transform" x-transition:enter-start="opacity-0 scale-95" x-transition:leave="transition-opacity duration-200 transform" x-transition:leave-end="opacity-0 scale-95">
 <div class="mb-8 text-center">
 <h1 class="font-bold text-2xl mb-2">Connexion</h1>
 <p class="text-[var(--muted)]">Entrez vos identifiants pour accéder au dashboard</p>
 </div>
 
 <template x-if="errorMessage">
-<div class="alert alert-error mb-6" role="alert"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span x-text="errorMessage"></span></div>
+<div class="alert alert-error mb-6" role="alert" x-transition:enter><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span x-text="errorMessage"></span></div>
 </template>
 
 <form @submit.prevent="handleLogin" class="space-y-5" x-data="loginForm()">
@@ -97,14 +109,14 @@ label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em
 </div>
 </div>
 
-<div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-8" x-show="mfaRequired" x-transition>
+<div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-8" x-show="mfaRequired" x-transition:enter="transition-opacity duration-300 transform" x-transition:enter-start="opacity-0 scale-95" x-transition:leave="transition-opacity duration-200 transform" x-transition:leave-end="opacity-0 scale-95">
 <div class="mb-8 text-center">
 <h1 class="font-bold text-2xl mb-2">Authentification à 2 facteurs</h1>
 <p class="text-[var(--muted)]">Entrez le code à 6 chiffres de votre application d'authentification</p>
 </div>
 
 <template x-if="errorMessage">
-<div class="alert alert-error mb-6" role="alert"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span x-text="errorMessage"></span></div>
+<div class="alert alert-error mb-6" role="alert" x-transition:enter><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span x-text="errorMessage"></span></div>
 </template>
 
 <form @submit.prevent="handleMFA" class="space-y-5" x-data="mfaForm()">

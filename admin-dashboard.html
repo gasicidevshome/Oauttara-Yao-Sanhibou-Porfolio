@@ -3,30 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin | Gasici Mito Dev</title>
+<title>Admin Dashboard | Gasici Mito Dev</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.13.5/dist/cdn.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.13.5/dist/cdn.min.js"></script>
 <style>
 :root{
-  --bg:#0d0d18;--surface:rgba(18,18,40,.85);--text:#e0e0f5;
-  --muted:#6060a0;--border:rgba(255,255,255,.08);--card:rgba(18,18,45,.9);
+  --bg:#0d0d18;--surface:rgba(18,18,40,.9);--text:#e0e0f5;
+  --muted:#6060a0;--border:rgba(255,255,255,.08);--card:rgba(18,18,45,.95);
   --g:0,200,110;--b:80,130,255;--p:150,80,255;--pk:200,80,140;--y:200,160,30;
   --sidebar-w:280px;--header-h:64px;
+  --radius:14px;--radius-sm:8px;--radius-lg:20px;
 }
-*, *::before, *::after{box-sizing:border-box;margin:0;padding:0}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;overflow:hidden}
 body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 a{color:inherit;text-decoration:none;cursor:none}
 button{cursor:none;border:none;background:none;font:inherit;color:inherit}
-input,textarea,select{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.6rem .8rem;width:100%;outline:none}
+input,textarea,select{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.75rem 1rem;width:100%;outline:none;transition:border-color .2s,box-shadow .2s}
 input:focus,textarea:focus,select:focus{border-color:rgba(var(--g),.6);box-shadow:0 0 0 3px rgba(var(--g),.15)}
 ::placeholder{color:var(--muted)}
-label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.35rem;font-weight:600}
-.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px}
+label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.5rem;font-weight:600}
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius)}
 table{width:100%;border-collapse:collapse;font-size:.8rem}
 th,td{padding:.75rem 1rem;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
 th{background:var(--surface);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-size:.65rem}
@@ -37,31 +37,32 @@ tr:hover td{background:rgba(var(--g),.03)}
 .badge-purple{border-color:rgba(var(--p),.3);color:rgba(var(--p),1)}
 .badge-yellow{border-color:rgba(var(--y),.3);color:rgba(var(--y),1)}
 .badge-red{border-color:rgba(255,60,90,.3);color:rgba(255,60,90,1)}
-.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.55rem 1.1rem;border-radius:6px;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;transition:all .2s}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.55rem 1.1rem;border-radius:var(--radius-sm);font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;transition:all .2s}
 .btn-primary{background:rgba(var(--g),1);color:#061210;border:none}
-.btn-primary:hover{background:#fff;transform:translateY(-1px);box-shadow:0 4px 16px rgba(var(--g),.3)}
+.btn-primary:hover:not(:disabled){background:#fff;transform:translateY(-1px);box-shadow:0 4px 16px rgba(var(--g),.3)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
 .btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}
 .btn-secondary:hover{border-color:rgba(var(--g),.4);color:rgba(var(--g),1)}
 .btn-danger{background:rgba(255,60,90,.1);color:rgba(255,60,90,1);border:1px solid rgba(255,60,90,.3)}
 .btn-danger:hover{background:rgba(255,60,90,1);color:#fff}
 .btn-ghost{background:transparent;color:var(--muted);border:1px solid transparent}
 .btn-ghost:hover{color:rgba(var(--g),1);background:rgba(var(--g),.08)}
-.icon-btn{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--border);color:var(--muted);transition:all .2s}
+.icon-btn{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);border:1px solid var(--border);color:var(--muted);transition:all .2s}
 .icon-btn:hover{border-color:rgba(var(--g),.4);color:rgba(var(--g),1);background:rgba(var(--g),.08)}
 .icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .3s}
 .modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:12px;width:100%;max-width:560px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;transform:scale(.95);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);width:100%;max-width:560px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;transform:scale(.95);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
 .modal-overlay.open .modal{transform:scale(1)}
 .modal-header{display:flex;justify-content:space-between;align-items:center;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border)}
 .modal-title{font-weight:800;font-size:1.1rem}
-.modal-close{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--border);color:var(--muted);transition:all .2s}
+.modal-close{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);border:1px solid var(--border);color:var(--muted);transition:all .2s}
 .modal-close:hover{border-color:rgba(255,60,90,.4);color:rgba(255,60,90,1);background:rgba(255,60,90,.08);transform:rotate(90deg)}
 .modal-body{padding:1.5rem;overflow-y:auto;flex:1}
 .modal-footer{display:flex;justify-content:flex-end;gap:.75rem;padding:1rem 1.5rem;border-top:1px solid var(--border);background:var(--surface)}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
 .form-group.full-width{grid-column:1/-1}
-.tag-input{display:flex;flex-wrap:wrap;gap:.4rem;padding:.5rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;min-height:44px}
+.tag-input{display:flex;flex-wrap:wrap;gap:.4rem;padding:.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);min-height:44px}
 .tag-input:focus-within{border-color:rgba(var(--g),.4)}
 .tag-item{display:inline-flex;align-items:center;gap:.3rem;background:rgba(var(--g),.15);color:rgba(var(--g),1);padding:.15rem .5rem .15rem .35rem;border-radius:4px;font-size:.65rem;font-family:'Space Mono',monospace}
 .tag-item button{margin-left:.25rem;padding:0;color:inherit;opacity:.7}
@@ -69,17 +70,17 @@ tr:hover td{background:rgba(var(--g),.03)}
 .tag-input input{flex:1;min-width:120px;border:none;background:transparent;padding:.2rem 0}
 .empty-state{text-align:center;padding:3rem;color:var(--muted)}
 .empty-state svg{width:64px;height:64px;margin-bottom:1rem;opacity:.5}
-.card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:all .3s}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all .3s}
 .card:hover{border-color:rgba(var(--g),.2);box-shadow:0 8px 24px rgba(0,0,0,.2)}
 .card-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 .card-title{font-weight:700;font-size:.9rem}
 .card-body{padding:1.25rem}
 .card-footer{padding:.75rem 1.25rem;border-top:1px solid var(--border);background:var(--surface);display:flex;justify-content:flex-end;gap:.5rem}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.25rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem}
 .stat-value{font-weight:900;font-size:2rem;color:rgba(var(--g),1);line-height:1}
 .stat-label{font-family:'Space Mono',monospace;font-size:.55rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.4rem}
-.sidebar-link{display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;color:var(--muted);border-radius:8px;margin:.2rem 1rem;transition:all .2s;position:relative;overflow:hidden}
+.sidebar-link{display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;color:var(--muted);border-radius:var(--radius);margin:.2rem 1rem;transition:all .2s;position:relative;overflow:hidden}
 .sidebar-link::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:rgba(var(--g),1);transform:scaleY(0);transform-origin:bottom;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
 .sidebar-link:hover,.sidebar-link.active{color:var(--text);background:rgba(var(--g),.08)}
 .sidebar-link:hover::before,.sidebar-link.active::before{transform:scaleY(1);transform-origin:top}
@@ -91,6 +92,7 @@ tr:hover td{background:rgba(var(--g),.03)}
 .page-leave-active{opacity:0;transform:translateY(-20px);transition:all .3s cubic-bezier(.55,.06,.68,.19)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:rgba(var(--g),1);border-radius:50%;animation:spin .8s linear infinite}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 @media(max-width:1024px){
   .sidebar{transform:translateX(-100%);transition:transform .3s ease}
   .sidebar.open{transform:translateX(0)}
@@ -116,7 +118,7 @@ tr:hover td{background:rgba(var(--g),.03)}
 <nav class="flex-1 overflow-y-auto p-2" x-ref="nav">
 <a href="#" class="sidebar-link" @click.prevent="navigate('dashboard')" :class="{active: page==='dashboard'}"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
 <a href="#" class="sidebar-link" @click.prevent="navigate('projects')" :class="{active: page==='projects'}"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Projets <span class="sidebar-badge" x-text="projectsCount"></span></a>
-<a href="#" class="sidebar-link" @click.prevent="navigate('skills')" :class="{active: page==='skills'}"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Compétences</a>
+<a href="#" class="sidebar-link" @click.prevent="navigate('skills')" :class="{active: page==='skills'}"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg>Compétences</a>
 <a href="#" class="sidebar-link" @click.prevent="navigate('about')" :class="{active: page==='about'}"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>À propos</a>
 <a href="#" class="sidebar-link" @click.prevent="navigate('cv')" :class="{active: page==='cv'}"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>CV</a>
 <a href="#" class="sidebar-link" @click.prevent="navigate('contact')" :class="{active: page==='contact'}"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Contact</a>
@@ -161,7 +163,7 @@ tr:hover td{background:rgba(var(--g),.03)}
 <template x-if="page==='audit'"><div x-html="renderAudit()"></div></template>
 </div>
 
-<div x-show="loadingAuth" class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg)]" x-transition:opacity>
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg)]" x-show="loadingAuth" x-transition:opacity>
 <div class="text-center"><div class="spinner mx-auto mb-4"></div><p class="text-[var(--muted)]">Vérification de l'authentification...</p></div>
 </div>
 
@@ -200,6 +202,12 @@ currentUser: null,
 currentUserRole: '—',
 projectsCount: 0,
 adminsCount: 0,
+skillsCount: 0,
+mediaCount: 0,
+recentProjects: [],
+projects: [],
+skills: [],
+media: [],
 
 async init() {
 await this.checkAuth();
@@ -233,12 +241,17 @@ return data?.[0]?.role || 'admin';
 
 async loadCounts() {
 const { tables } = window.SupabaseClient;
-const [projects, admins] = await Promise.all([
+const [projects, skills, admins, media] = await Promise.all([
 tables.projects.getAll(),
-tables.admin_users.getAll()
+tables.skills.getAll(),
+tables.admin_users.getAll(),
+tables.media.getAll()
 ]);
 this.projectsCount = projects.data?.length || 0;
+this.skillsCount = skills.data?.length || 0;
 this.adminsCount = admins.data?.length || 0;
+this.mediaCount = media.data?.length || 0;
+this.recentProjects = projects.data?.slice(0,5) || [];
 },
 
 navigate(page) {
@@ -314,9 +327,9 @@ return `
 <div class="page-enter-active">
 <div class="stats-grid">
 <div class="stat-card"><div class="stat-value" x-text="projectsCount"></div><div class="stat-label">Projets</div></div>
-<div class="stat-card"><div class="stat-value" x-text="skillsCount || 0"></div><div class="stat-label">Compétences</div></div>
+<div class="stat-card"><div class="stat-value" x-text="skillsCount"></div><div class="stat-label">Compétences</div></div>
 <div class="stat-card"><div class="stat-value" x-text="adminsCount"></div><div class="stat-label">Admins</div></div>
-<div class="stat-card"><div class="stat-value" x-text="mediaCount || 0"></div><div class="stat-label">Médias</div></div>
+<div class="stat-card"><div class="stat-value" x-text="mediaCount"></div><div class="stat-label">Médias</div></div>
 </div>
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 <div class="card"><div class="card-header"><h3 class="card-title">Actions rapides</h3></div>
@@ -332,7 +345,12 @@ return `
 <table><thead><tr><th>Projet</th><th>Catégorie</th><th>Stack</th><th>Status</th><th></th></tr></thead>
 <tbody>
 <template x-for="p in recentProjects" :key="p.id">
-<tr><td class="font-medium">${p.title}</td><td>${p.category || '—'}</td><td><div class="flex flex-wrap gap-1">${p.stack?.slice(0,3).map(s => `<span class="badge">${s}</span>`).join('')}</div></td><td><span class="badge" :class="p.published ? 'badge-green' : 'badge-yellow'" x-text="p.published ? 'Publié' : 'Brouillon'"></span></td><td><button class="icon-btn" @click="editProject(p)" title="Modifier"></button></td></tr>
+<tr><td class="font-medium" x-text="p.title"></td>
+<td><span class="badge badge-blue" x-text="p.category || '—'"></span></td>
+<td><div class="flex flex-wrap gap-1"><template x-for="s in p.stack" :key="s"><span class="badge" x-text="s"></span></template></div></td>
+<td><span class="badge" :class="p.published ? 'badge-green' : 'badge-yellow'" x-text="p.published ? 'Publié' : 'Brouillon'"></span></td>
+<td><button class="icon-btn" @click="editProject(p)" title="Modifier"></button></td>
+</tr>
 </template>
 </tbody></table></div></div></div></div>`;
 },
@@ -359,12 +377,12 @@ return `
 <td><div class="flex flex-wrap gap-1"><template x-for="s in p.stack" :key="s"><span class="badge" x-text="s"></span></template></div></td>
 <td><template x-if="p.image_url"><img :src="p.image_url" alt="" class="w-16 h-10 object-cover rounded"/></template><template x-if="!p.image_url"><span class="text-[var(--muted)] text-xs">—</span></template></td>
 <td><span class="badge" :class="p.published ? 'badge-green' : 'badge-yellow'" x-text="p.published ? 'Publié' : 'Brouillon'"></span></td>
-<td><input type="number" :value="p.sort_order" class="w-16 text-center" @change="updateProjectOrder(p.id, $event.target.value)"></td>
+<td><input type="number" :value="p.sort_order" min="0" class="w-16 text-center" @change="updateProjectOrder(p.id, $event.target.value)"></td>
 <td><div class="flex items-center gap-1"><button class="icon-btn" @click="editProject(p)" title="Modifier"></button><button class="icon-btn" @click="deleteProject(p.id)" title="Supprimer"></button></div></td>
 </tr>
 </template>
 </tbody></table>
-<div x-show="!projects.length" class="empty-state p-8"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto mb-2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg><p>Aucun projet</p></div></div></div>`;
+<div x-show="!projects.length" class="empty-state p-8"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/></svg><p>Aucun projet</p></div></div></div>`;
 },
 
 async loadProjects() {
@@ -426,9 +444,7 @@ if (input) input.focus();
 
 addTag(value) {
 if (!value?.trim()) return;
-if (!this.form.stack.includes(value.trim())) {
-this.form.stack.push(value.trim());
-}
+if (!this.form.stack.includes(value.trim())) this.form.stack.push(value.trim());
 if (this.$refs.tagInputField) this.$refs.tagInputField.value = '';
 },
 
@@ -529,20 +545,71 @@ this.closeModal(); await this.loadSkills();
 
 async deleteSkill(id) {if(!await this.confirm('Supprimer ?')) return; await window.SupabaseClient.tables.skills.delete(id); this.showToast('Supprimé'); await this.loadSkills();},
 
-// ========== PLACEHOLDERS FOR OTHER PAGES ==========
-renderAbout() {return `<div class="page-enter-active"><div class="card"><div class="card-header"><h3 class="card-title">À propos</h3></div><div class="card-body"><p class="text-[var(--muted)]">Éditeur de contenu "À propos" à implémenter.</p></div></div></div>`;},
-renderCV() {return `<div class="page-enter-active"><div class="card"><div class="card-header"><h3 class="card-title">CV</h3></div><div class="card-body"><p class="text-[var(--muted)]">Éditeur CV (Expérience, Formation, Compétences, Stack, Langues, Intérêts) à implémenter.</p></div></div></div>`;},
-renderContact() {return `<div class="page-enter-active"><div class="card"><div class="card-header"><h3 class="card-title">Contact</h3></div><div class="card-body"><p class="text-[var(--muted)]">Éditeur liens de contact à implémenter.</p></div></div></div>`;},
-renderMedia() {return `<div class="page-enter-active"><div class="flex items-center justify-between mb-6"><h2 class="font-bold text-xl">Médias</h2><button class="btn btn-primary" @click="openMediaUpload()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg> Uploader</button></div><div class="card"><div class="card-body"><p class="text-[var(--muted)]">Galerie médias à implémenter.</p></div></div></div>`;},
-renderAdmins() {return `<div class="page-enter-active"><div class="card"><div class="card-header"><h3 class="card-title">Admins</h3></div><div class="card-body"><p class="text-[var(--muted)]">Gestion admins à implémenter.</p></div></div></div>`;},
-renderAudit() {return `<div class="page-enter-active"><div class="card"><div class="card-header"><h3 class="card-title">Audit Logs</h3></div><div class="card-body"><p class="text-[var(--muted)]">Logs d'audit à implémenter.</p></div></div></div>`;},
+// ========== ABOUT ==========
+renderAbout() {
+return `<div class="page-enter-active"><div class="card"><div class="card-header"><h3 class="card-title">À propos</h3></div><div class="card-body"><p class="text-[var(--muted)]">Éditeur de contenu "À propos" à implémenter.</p></div></div></div>`;
+},
 
-// ========== MEDIA UPLOAD ==========
+// ========== CV ==========
+renderCV() {
+return `<div class="page-enter-active"><div class="card"><div class="card-header"><h3 class="card-title">CV</h3></div><div class="card-body"><p class="text-[var(--muted)]">Éditeur CV (Expérience, Formation, Compétences, Stack, Langues, Intérêts) à implémenter.</p></div></div></div>`;
+},
+
+// ========== CONTACT ==========
+renderContact() {
+return `<div class="page-enter-active"><div class="card"><div class="card-header"><h3 class="card-title">Contact</h3></div><div class="card-body"><p class="text-[var(--muted)]">Éditeur liens de contact à implémenter.</p></div></div></div>`;
+},
+
+// ========== MEDIA ==========
+renderMedia() {
+return `
+<div class="page-enter-active">
+<div class="flex items-center justify-between mb-6"><h2 class="font-bold text-xl">Médias</h2>
+<button class="btn btn-primary" @click="openMediaUpload()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg> Uploader</button></div>
+<div class="card"><div class="card-body"><p class="text-[var(--muted)]">Galerie médias à implémenter.</p></div></div></div>`;
+},
+
 openMediaUpload() {
 this.modalTitle = 'Uploader une image';
 this.modalContent = `<div x-data="mediaUpload()"><div class="drop-zone border-2 border-dashed border-[var(--border)] rounded-xl p-8 text-center" @dragover.prevent="dragging=true" @dragleave="dragging=false" @drop.prevent="handleDrop($event)" :class="{'border-[rgba(var(--g),.5)] bg-[rgba(var(--g),.05)]': dragging}"><svg class="w-12 h-12 mx-auto mb-4 text-[var(--muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><p class="text-[var(--muted)]">Glissez-déposez une image ou cliquez</p><input type="file" accept="image/*" @change="handleFile($event)" class="hidden" x-ref="fileInput"><button class="btn btn-secondary mt-4" @click="$refs.fileInput.click()">Choisir un fichier</button></div><div x-show="uploading" class="mt-4 text-center"><div class="spinner mx-auto mb-2"></div><p class="text-sm text-[var(--muted)]" x-text="uploadProgress"></p></div><div x-show="previewUrl" class="mt-4"><img :src="previewUrl" alt="Preview" class="max-h-64 mx-auto rounded-lg border border-[var(--border)]"></div></div>`;
 this.modalFooter = `<button class="btn btn-secondary" @click="closeModal">Annuler</button><button class="btn btn-primary" :disabled="!previewUrl || uploading" @click="uploadMedia()">Uploader</button>`;
 this.modalOpen = true;
+},
+
+// ========== ADMINS ==========
+renderAdmins() {
+return `<div class="page-enter-active"><div class="card"><div class="card-header"><h3 class="card-title">Admins</h3></div><div class="card-body"><p class="text-[var(--muted)]">Gestion admins à implémenter.</p></div></div></div>`;
+},
+
+// ========== AUDIT ==========
+renderAudit() {
+return `<div class="page-enter-active"><div class="card"><div class="card-header"><h3 class="card-title">Audit Logs</h3></div><div class="card-body"><p class="text-[var(--muted)]">Logs d'audit à implémenter.</p></div></div></div>`;
+},
+
+// ========== MEDIA UPLOAD ==========
+mediaUpload() {
+return {
+dragging: false,
+uploading: false,
+uploadProgress: '',
+previewUrl: null,
+selectedFile: null,
+handleFile(e) { const f = e.target.files[0]; if(f) this.setFile(f); },
+handleDrop(e) { this.dragging = false; const f = e.dataTransfer.files[0]; if(f) this.setFile(f); },
+setFile(f) { if(!f.type.startsWith('image/')) return; this.selectedFile = f; this.previewUrl = URL.createObjectURL(f); },
+async uploadMedia() {
+if(!this.selectedFile) return;
+this.uploading = true;
+this.uploadProgress = 'Upload...';
+try {
+const url = await window.SupabaseClient.utils.uploadImage(this.selectedFile, 'admin');
+this.showToast('Image uploadée : ' + url);
+this.closeModal();
+await this.loadMedia();
+} catch(e) { this.showToast(e.message, 'error'); }
+finally { this.uploading = false; }
+}
+};
 },
 
 // ========== DATA LOADERS ==========

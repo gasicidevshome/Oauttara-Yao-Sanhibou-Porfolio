@@ -1,173 +1,240 @@
-// Supabase Client Configuration for Portfolio Admin
-// Project: wsajnfwotxodlkmvxzyc
-// URL: https://wsajnfwotxodlkmvxzyc.supabase.co
+/**
+ * Supabase Client - Portfolio Admin
+ * Centralized client with session persistence, auto-refresh, error handling
+ */
 
-// Initialize Supabase client
 const SUPABASE_URL = 'https://wsajnfwotxodlkmvxzyc.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_iIZ5S5u5p3Cx6gAmVCBmyQ_Dg6ZtjZp';
 
-// Global Supabase client
 let supabase = null;
+let authStateCallback = null;
+let refreshInterval = null;
 
-// Initialize on load
-document.addEventListener('DOMContentLoaded', async () => {
-    if (window.supabase) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('[Supabase] Client initialized');
+// Initialize Supabase client
+async function initSupabase() {
+    if (window.supabase && !supabase) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                autoRefreshToken: true,
+                persistSession: true,
+                detectSessionInUrl: true,
+                storage: window.localStorage,
+                storageKey: 'portfolio-admin-auth'
+            }
+        });
         
-        // Check auth state
+        // Listen to auth state changes
+        supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                const isAdmin = await checkAdminStatus(session.user.id);
+                if (!isAdmin) {
+                    await supabase.auth.signOut();
+                    showToast('Accès non autorisé : droits administrateur requis', 'error');
+                    setTimeout(() => window.location.href = 'admin-login.html', 2000);
+                    return;
+                }
+                startTokenRefresh();
+            } else if (event === 'SIGNED_OUT') {
+                stopTokenRefresh();
+            }
+            
+            if (authStateCallback) authStateCallback(event, session);
+        });
+        
+        // Check existing session
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-            console.log('[Supabase] User logged in:', session.user.email);
+            const isAdmin = await checkAdminStatus(session.user.id);
+            if (!isAdmin) {
+                await supabase.auth.signOut();
+                window.location.href = 'admin-login.html';
+                return;
+            }
+            startTokenRefresh();
         }
     }
-});
+    return supabase;
+}
+
+// Check if user has admin role
+async function checkAdminStatus(userId) {
+    try {
+        const { data, error } = await supabase
+            .from('admin_users')
+            .select('role, is_active')
+            .eq('id', userId)
+            .single();
+        
+        return data && data.is_active === true;
+    } catch (e) {
+        console.error('Admin check failed:', e);
+        return false;
+    }
+}
+
+// Token refresh management
+function startTokenRefresh() {
+    if (refreshInterval) return;
+    refreshInterval = setInterval(async () => {
+        try {
+            const { data: { session }, error } = await supabase.auth.refreshSession();
+            if (error) throw error;
+        } catch (e) {
+            console.warn('Token refresh failed:', e);
+        }
+    }, 30 * 60 * 1000); // Every 30 minutes
+}
+
+function stopTokenRefresh() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+    }
+}
 
 // Auth helpers
-export const auth = {
-    // Sign in with email/password
+const auth = {
     async signIn(email, password) {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         return data;
     },
 
-    // Sign out
+    async signInWithOtp(email) {
+        const { data, error } = await supabase.auth.signInWithOtp({ email });
+        if (error) throw error;
+        return data;
+    },
+
+    async verifyOtp(token, type = 'totp') {
+        const { data, error } = await supabase.auth.verifyOtp({ token, type });
+        if (error) throw error;
+        return data;
+    },
+
     async signOut() {
+        stopTokenRefresh();
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
     },
 
-    // Get current session
     async getSession() {
         const { data: { session } } = await supabase.auth.getSession();
         return session;
     },
 
-    // Get current user
     async getUser() {
         const { data: { user } } = await supabase.auth.getUser();
         return user;
     },
 
-    // Listen to auth changes
     onAuthStateChange(callback) {
+        authStateCallback = callback;
         return supabase.auth.onAuthStateChange(callback);
     },
 
-    // Check if user is admin
     async isAdmin() {
         const session = await this.getSession();
         if (!session) return false;
-        
-        const { data, error } = await supabase
-            .from('admin_users')
-            .select('role, is_active')
-            .eq('id', session.user.id)
-            .single();
-        
-        if (error || !data || !data.is_active) return false;
-        return true;
+        return checkAdminStatus(session.user.id);
     },
 
-    // Check if super admin
-    async isSuperAdmin() {
-        const session = await this.getSession();
-        if (!session) return false;
-        
-        const { data, error } = await supabase
-            .from('admin_users')
-            .select('role, is_active')
-            .eq('id', session.user.id)
-            .single();
-        
-        if (error || !data || !data.is_active) return false;
-        return data.role === 'super_admin';
+    async resetPassword(email, redirectTo) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+        if (error) throw error;
     }
 };
 
-// Generic CRUD helpers
-export const db = {
-    // Select with optional filters
+// Database helpers with retry logic
+const db = {
+    async withRetry(fn, retries = 3, delay = 1000) {
+        try {
+            return await fn();
+        } catch (e) {
+            if (retries > 0 && (e.message?.includes('network') || e.message?.includes('timeout') || e.status === 429)) {
+                await new Promise(r => setTimeout(r, delay));
+                return this.withRetry(fn, retries - 1, delay * 2);
+            }
+            throw e;
+        }
+    },
+
     async select(table, options = {}) {
-        let query = supabase.from(table).select(options.select || '*');
-        
-        if (options.filters) {
-            Object.entries(options.filters).forEach(([key, value]) => {
-                query = query.eq(key, value);
-            });
-        }
-        
-        if (options.order) {
-            query = query.order(options.order.column, { ascending: options.order.ascending !== false });
-        }
-        
-        if (options.limit) {
-            query = query.limit(options.limit);
-        }
-        
-        if (options.range) {
-            query = query.range(options.range.from, options.range.to);
-        }
-        
-        const { data, error, count } = await query;
-        if (error) throw error;
-        return { data, count };
-    },
-
-    // Insert single record
-    async insert(table, record) {
-        const { data, error } = await supabase.from(table).insert(record).select().single();
-        if (error) throw error;
-        return data;
-    },
-
-    // Insert multiple records
-    async insertMany(table, records) {
-        const { data, error } = await supabase.from(table).insert(records).select();
-        if (error) throw error;
-        return data;
-    },
-
-    // Update record
-    async update(table, id, updates) {
-        const { data, error } = await supabase.from(table).update(updates).eq('id', id).select().single();
-        if (error) throw error;
-        return data;
-    },
-
-    // Delete record
-    async delete(table, id) {
-        const { error } = await supabase.from(table).delete().eq('id', id);
-        if (error) throw error;
-        return true;
-    },
-
-    // Upload file to storage
-    async uploadFile(bucket, path, file, options = {}) {
-        const { data, error } = await supabase.storage.from(bucket).upload(path, file, {
-            cacheControl: '3600',
-            upsert: options.upsert || false,
-            contentType: options.contentType
+        return this.withRetry(async () => {
+            let query = supabase.from(table).select(options.select || '*');
+            
+            if (options.filters) {
+                Object.entries(options.filters).forEach(([key, value]) => {
+                    query = query.eq(key, value);
+                });
+            }
+            if (options.order) {
+                query = query.order(options.order.column, { ascending: options.order.ascending !== false });
+            }
+            if (options.limit) query = query.limit(options.limit);
+            if (options.range) query = query.range(options.range.from, options.range.to);
+            
+            const { data, error, count } = await query;
+            if (error) throw error;
+            return { data, count };
         });
-        if (error) throw error;
-        return data;
     },
 
-    // Get public URL for file
+    async insert(table, record) {
+        return this.withRetry(async () => {
+            const { data, error } = await supabase.from(table).insert(record).select().single();
+            if (error) throw error;
+            return data;
+        });
+    },
+
+    async insertMany(table, records) {
+        return this.withRetry(async () => {
+            const { data, error } = await supabase.from(table).insert(records).select();
+            if (error) throw error;
+            return data;
+        });
+    },
+
+    async update(table, id, updates) {
+        return this.withRetry(async () => {
+            const { data, error } = await supabase.from(table).update(updates).eq('id', id).select().single();
+            if (error) throw error;
+            return data;
+        });
+    },
+
+    async delete(table, id) {
+        return this.withRetry(async () => {
+            const { error } = await supabase.from(table).delete().eq('id', id);
+            if (error) throw error;
+            return true;
+        });
+    },
+
+    async uploadFile(bucket, path, file, options = {}) {
+        return this.withRetry(async () => {
+            const { data, error } = await supabase.storage.from(bucket).upload(path, file, {
+                cacheControl: '3600',
+                upsert: options.upsert || false,
+                contentType: options.contentType
+            });
+            if (error) throw error;
+            return data;
+        });
+    },
+
     getPublicUrl(bucket, path) {
         const { data } = supabase.storage.from(bucket).getPublicUrl(path);
         return data.publicUrl;
     },
 
-    // Delete file
     async deleteFile(bucket, path) {
         const { error } = await supabase.storage.from(bucket).remove([path]);
         if (error) throw error;
         return true;
     },
 
-    // Real-time subscription
     subscribe(table, callback, filter = null) {
         let channel = supabase.channel(`${table}_changes`);
         
@@ -191,44 +258,32 @@ export const db = {
 };
 
 // Table-specific helpers
-export const tables = {
+const tables = {
     projects: {
         async getAll(publishedOnly = false) {
-            const options = publishedOnly ? { filters: { published: true }, order: { column: 'sort_order' } } : { order: { column: 'sort_order' } };
+            const options = publishedOnly 
+                ? { filters: { published: true }, order: { column: 'sort_order' } }
+                : { order: { column: 'sort_order' } };
             return db.select('projects', options);
         },
-        async getById(id) {
-            return db.select('projects', { filters: { id } });
-        },
-        async create(data) {
-            return db.insert('projects', data);
-        },
-        async update(id, data) {
-            return db.update('projects', id, data);
-        },
-        async delete(id) {
-            return db.delete('projects', id);
-        },
+        async getById(id) { return db.select('projects', { filters: { id } }); },
+        async create(data) { return db.insert('projects', data); },
+        async update(id, data) { return db.update('projects', id, data); },
+        async delete(id) { return db.delete('projects', id); },
         async reorder(updates) {
-            // updates = [{id, sort_order}, ...]
-            const promises = updates.map(u => db.update('projects', u.id, { sort_order: u.sort_order }));
-            return Promise.all(promises);
+            return Promise.all(updates.map(u => db.update('projects', u.id, { sort_order: u.sort_order })));
         }
     },
 
     skills: {
-        async getAll() {
-            return db.select('skills', { order: { column: 'sort_order' } });
-        },
+        async getAll() { return db.select('skills', { order: { column: 'sort_order' } }); },
         async create(data) { return db.insert('skills', data); },
         async update(id, data) { return db.update('skills', id, data); },
         async delete(id) { return db.delete('skills', id); }
     },
 
     about: {
-        async get() {
-            return db.select('about', { limit: 1 });
-        },
+        async get() { return db.select('about', { limit: 1 }); },
         async upsert(data) {
             const existing = await this.get();
             if (existing.data && existing.data.length > 0) {
@@ -318,22 +373,21 @@ export const tables = {
 };
 
 // Utility functions
-export const utils = {
+const utils = {
     generateId() {
         return crypto.randomUUID();
     },
-    
+
     async uploadImage(file, folder = 'projects') {
-        const ext = file.name.split('.').pop();
+        const ext = file.name.split('.').pop().toLowerCase();
         const filename = `${folder}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-        await db.uploadFile('portfolio', filename, file);
+        await db.uploadFile('portfolio', filename, file, { contentType: file.type });
         return db.getPublicUrl('portfolio', filename);
     },
 
-    formatDate(dateString) {
-        return new Date(dateString).toLocaleDateString('fr-FR', {
-            day: '2-digit', month: '2-digit', year: 'numeric'
-        });
+    formatDate(dateString, options = {}) {
+        const defaultOpts = { day: '2-digit', month: '2-digit', year: 'numeric', ...options };
+        return new Date(dateString).toLocaleDateString('fr-FR', defaultOpts);
     },
 
     formatDateTime(dateString) {
@@ -341,8 +395,126 @@ export const utils = {
             day: '2-digit', month: '2-digit', year: 'numeric',
             hour: '2-digit', minute: '2-digit'
         });
+    },
+
+    formatRelativeTime(dateString) {
+        const now = new Date();
+        const then = new Date(dateString);
+        const diff = Math.floor((now - then) / 1000);
+        
+        if (diff < 60) return 'à l\'instant';
+        if (diff < 3600) return `il y a ${Math.floor(diff / 60)} min`;
+        if (diff < 86400) return `il y a ${Math.floor(diff / 3600)} h`;
+        if (diff < 604800) return `il y a ${Math.floor(diff / 86400)} j`;
+        return this.formatDate(dateString);
+    },
+
+    debounce(fn, wait) {
+        let timeout;
+        return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => fn.apply(this, args), wait);
+        };
+    },
+
+    throttle(fn, limit) {
+        let inThrottle;
+        return (...args) => {
+            if (!inThrottle) {
+                fn.apply(this, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
+        };
     }
 };
 
+// Toast notification system
+const toast = {
+    container: null,
+    
+    init() {
+        if (!this.container) {
+            this.container = document.createElement('div');
+            this.container.id = 'toast-container';
+            this.container.style.cssText = `
+                position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+                display: flex; flex-direction: column; gap: 8px;
+                pointer-events: none;
+            `;
+            document.body.appendChild(this.container);
+        }
+    },
+
+    show(message, type = 'success', duration = 4000) {
+        this.init();
+        
+        const toast = document.createElement('div');
+        const icons = {
+            success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',
+            error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+            warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+            info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+        };
+        
+        const colors = {
+            success: 'rgba(0,200,110,1)',
+            error: 'rgba(255,60,90,1)',
+            warning: 'rgba(200,160,30,1)',
+            info: 'rgba(80,130,255,1)'
+        };
+        
+        toast.style.cssText = `
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 18px; border-radius: 10px;
+            background: var(--card); border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            min-width: 280px; max-width: 420px;
+            animation: slideIn 0.3s cubic-bezier(.34,1.56,.64,1);
+            pointer-events: auto;
+            border-left: 4px solid ${colors[type]};
+        `;
+        
+        toast.innerHTML = `
+            <span style="color:${colors[type]};flex-shrink:0">${icons[type]}</span>
+            <span style="flex:1;font-size:.85rem;line-height:1.4">${message}</span>
+            <button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--muted);padding:4px;cursor:pointer;flex-shrink:0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        `;
+        
+        this.container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.2s ease-in forwards';
+            setTimeout(() => toast.remove(), 200);
+        }, duration);
+    },
+
+    success(msg, dur) { this.show(msg, 'success', dur); },
+    error(msg, dur) { this.show(msg, 'error', dur); },
+    warning(msg, dur) { this.show(msg, 'warning', dur); },
+    info(msg, dur) { this.show(msg, 'info', dur); }
+};
+
+// Add toast animations to document
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes slideOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100px); } }
+`;
+document.head.appendChild(style);
+
 // Export for global use
-window.SupabaseClient = { auth, db, tables, utils };
+window.SupabaseClient = { 
+    init: initSupabase, 
+    auth, 
+    db, 
+    tables, 
+    utils, 
+    toast,
+    supabase: () => supabase
+};
+
+// Auto-initialize on DOM ready
+document.addEventListener('DOMContentLoaded', initSupabase);
