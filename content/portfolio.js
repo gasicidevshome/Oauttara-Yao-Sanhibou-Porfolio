@@ -124,7 +124,7 @@ window.PORTFOLIO = {
           "Next.js",
           "Firebase"
         ],
-        "url": "https://devpulsecode.vercel.app",
+        "url": "https://devpulsecode-xpiv.vercel.app",
         "color": "76,255,160",
         "visible": true
       },
