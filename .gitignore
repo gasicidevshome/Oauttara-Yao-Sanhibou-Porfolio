@@ -1,0 +1,13 @@
+# Secrets : ne jamais publier (clé service_role Supabase, etc.)
+.env
+.env.*
+!.env.local.example
+
+# Dépendances et fichiers locaux
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
+
+# Sauvegardes du tableau de bord (données privées)
+tableau-de-bord-*.json

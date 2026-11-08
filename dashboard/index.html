@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://api.github.com; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Tableau de bord · Gasici Mito Dev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+<canvas id="blobCanvas" aria-hidden="true"></canvas>
+
+<!-- Écran de verrouillage (si le chiffrement est activé) -->
+<div class="lock" id="lock" hidden>
+  <form class="glass lock-card" id="lock-form" autocomplete="off">
+    <span class="logo-mark big-mark">GM</span>
+    <h2 id="lock-title">Tableau de bord verrouillé</h2>
+    <p class="hint" id="lock-sub">Saisis ton mot de passe pour déchiffrer tes données.</p>
+    <input type="password" id="lock-pass" autocomplete="current-password" placeholder="Mot de passe" required>
+    <p class="lock-err" id="lock-err" hidden>Mot de passe incorrect.</p>
+    <button class="btn" type="submit">Déverrouiller</button>
+    <button class="linkbtn" type="button" id="lock-cancel" hidden>Annuler</button>
+  </form>
+</div>
+
+<header class="top glass">
+  <a class="logo" href="../" title="Retour au portfolio"><span class="logo-mark">GM</span><span class="logo-txt">Gasici · <b>Tableau de bord</b></span></a>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
+    <button class="tab on" data-tab="vue" role="tab">Vue d'ensemble</button>
+    <button class="tab" data-tab="finances" role="tab">Finances</button>
+    <button class="tab" data-tab="projets" role="tab">Projets <span class="badge" data-badge="projets"></span></button>
+    <button class="tab" data-tab="pipeline" role="tab">Opportunités <span class="badge" data-badge="pipeline"></span></button>
+    <button class="tab" data-tab="taches" role="tab">Tâches <span class="badge" data-badge="taches"></span></button>
+    <button class="tab" data-tab="plateformes" role="tab">Plateformes</button>
+    <button class="tab" data-tab="portfolio" role="tab">Portfolio</button>
+    <button class="tab" data-tab="reglages" role="tab">Réglages</button>
+  </nav>
+  <div class="actions">
+    <button class="icon-btn" id="btn-theme" type="button" aria-label="Changer de thème" title="Thème clair / sombre"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    <button class="icon-btn" id="btn-export" type="button" aria-label="Sauvegarder mes données" title="Sauvegarder (fichier .json)"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></button>
+    <label class="icon-btn" for="file-import" aria-label="Importer une sauvegarde" title="Importer une sauvegarde"><svg viewBox="0 0 24 24"><path d="M12 21V9m0 0-4 4m4-4 4 4M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/></svg></label>
+    <input type="file" id="file-import" accept="application/json,.json" hidden>
+    <button class="icon-btn" id="btn-lock" type="button" aria-label="Verrouiller" title="Verrouiller maintenant" hidden><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></button>
+  </div>
+</header>
+
+<main class="wrap" id="app">
+  <!-- ═════════ VUE D'ENSEMBLE ═════════ -->
+  <section data-panel="vue">
+    <div class="title-row">
+      <h1>Vue d'ensemble</h1>
+      <div class="seg" id="period" role="group" aria-label="Période">
+        <button data-p="mois" class="on">Ce mois</button><button data-p="dernier">Mois dernier</button><button data-p="3mois">3 mois</button><button data-p="annee">Cette année</button><button data-p="tout">Tout</button>
+      </div>
+      <span class="chip" id="period-lbl"></span>
+      <button class="chip chip-btn" id="btn-print" type="button"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z"/></svg>Rapport</button>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="grid g-a">
+      <article class="glass card">
+        <div class="card-head">
+          <h2 id="flow-title">Revenus encaissés</h2>
+          <div class="seg small" id="flow-seg" role="group" aria-label="Série"><button data-s="rev" class="on">Revenus</button><button data-s="dep">Dépenses</button><button data-s="net">Net</button></div>
+        </div>
+        <div class="steps" id="flow-steps"></div>
+        <details class="table-view"><summary>Voir en tableau</summary><table class="tbl" id="flow-table"></table></details>
+      </article>
+      <article class="card goal">
+        <div class="card-head"><span class="goal-chip">Objectif du mois</span><span class="goal-chip ghost" id="goal-days"></span></div>
+        <p class="goal-pct" id="goal-pct"></p>
+        <p class="goal-sub" id="goal-sub"></p>
+        <div class="goal-track"><i id="goal-bar"></i></div>
+        <div class="goal-year"><span>Objectif annuel</span><b id="goal-year"></b></div>
+        <div class="goal-track thin"><i id="goal-year-bar"></i></div>
+      </article>
+    </div>
+
+    <div class="grid g-b">
+      <article class="glass card">
+        <div class="card-head"><h2>Entonnoir des opportunités</h2><span class="hint">toutes périodes · conversion entre étapes</span></div>
+        <div class="funnel" id="funnel"></div>
+      </article>
+      <article class="glass card">
+        <div class="card-head"><h2>Conseils</h2><span class="hint">calculés à partir de tes données</span></div>
+        <ul class="insights" id="insights"></ul>
+      </article>
+    </div>
+
+    <div class="grid g-c">
+      <article class="glass card">
+        <div class="card-head"><h2>Trésorerie cumulée</h2><span class="hint">12 derniers mois · encaissé − dépensé</span></div>
+        <div class="line" id="cash"></div>
+      </article>
+      <article class="glass card">
+        <div class="card-head"><h2>Répartition</h2>
+          <div class="seg small" id="split-seg" role="group" aria-label="Répartition"><button data-r="src" class="on">Sources</button><button data-r="cat">Dépenses</button><button data-r="type">Projets</button></div>
+        </div>
+        <div id="split"></div>
+      </article>
+    </div>
+
+    <div class="grid g-d">
+      <article class="glass card">
+        <div class="card-head"><h2>Projets en cours</h2><span class="hint" id="proj-hint"></span></div>
+        <div id="proj-list"></div>
+      </article>
+      <article class="glass card">
+        <div class="card-head"><h2 id="cal-title">Calendrier</h2>
+          <div class="cal-nav"><button class="icon-btn sm" id="cal-prev" aria-label="Mois précédent"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button><button class="icon-btn sm" id="cal-next" aria-label="Mois suivant"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button></div>
+        </div>
+        <div class="cal" id="cal"></div>
+        <ul class="agenda compact" id="cal-day"></ul>
+      </article>
+    </div>
+
+    <div class="grid g-e">
+      <article class="glass card">
+        <div class="card-head"><h2>À faire bientôt</h2><span class="hint">en retard et 14 prochains jours</span></div>
+        <ul class="agenda" id="agenda"></ul>
+      </article>
+      <article class="glass card">
+        <div class="card-head"><h2>Plateformes</h2></div>
+        <ul class="plat" id="plat"></ul>
+      </article>
+      <article class="glass card">
+        <div class="card-head"><h2>Activité récente</h2></div>
+        <ul class="journal" id="journal"></ul>
+      </article>
+    </div>
+
+    <p class="privacy"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      <span id="privacy-txt">Tes données restent dans ce navigateur, sur cet appareil, et ne sont jamais envoyées sur Internet.</span></p>
+  </section>
+
+  <section data-panel="finances" hidden>
+    <div class="title-row"><h1>Finances</h1>
+      <div class="seg" id="fin-seg" role="group" aria-label="Liste"><button data-l="revenus" class="on">Revenus</button><button data-l="depenses">Dépenses</button></div>
+    </div>
+    <div data-list="revenus"></div>
+    <div data-list="depenses" hidden></div>
+  </section>
+  <section data-panel="projets" hidden><div class="title-row"><h1>Projets clients</h1></div><div data-list="projets"></div></section>
+  <section data-panel="pipeline" hidden><div class="title-row"><h1>Opportunités</h1></div><div data-list="pipeline"></div></section>
+  <section data-panel="taches" hidden><div class="title-row"><h1>Tâches</h1></div><div data-list="taches"></div></section>
+  <section data-panel="plateformes" hidden><div class="title-row"><h1>Plateformes</h1></div><div data-list="plateformes"></div></section>
+
+  <!-- ═════════ ÉDITEUR DU PORTFOLIO ═════════ -->
+  <section data-panel="portfolio" hidden>
+    <div class="title-row">
+      <h1>Portfolio</h1>
+      <span class="chip" id="pf-status"></span>
+      <button class="chip chip-btn" type="button" id="pf-preview"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Aperçu</button>
+      <button class="chip chip-btn" type="button" id="pf-revert" disabled>Annuler les modifications</button>
+      <button class="btn sm" type="button" id="pf-publish-top" disabled>Publier…</button>
+    </div>
+    <div class="pf-layout">
+      <nav class="glass pf-nav" id="pf-nav" aria-label="Sections du portfolio"></nav>
+      <div class="glass card pf-card" id="pf-root"></div>
+    </div>
+  </section>
+
+  <!-- ═════════ RÉGLAGES ═════════ -->
+  <section data-panel="reglages" hidden>
+    <div class="title-row"><h1>Réglages</h1></div>
+    <div class="grid g-set">
+      <form class="glass card" id="set-form" autocomplete="off">
+        <h2>Objectifs et devises</h2>
+        <label class="field">Objectif mensuel (F CFA)<input type="number" min="0" step="1000" name="objectif" inputmode="numeric"></label>
+        <label class="field">Objectif annuel (F CFA)<input type="number" min="0" step="10000" name="objectifAn" inputmode="numeric"></label>
+        <label class="field">1 € = (F CFA)<input type="number" value="655.957" disabled><small class="hint">Taux fixe officiel de l'euro.</small></label>
+        <label class="field">1 $ = (F CFA)<input type="number" min="0" step="0.01" name="tauxUSD" inputmode="decimal" placeholder="à renseigner"><small class="hint">Mets le taux que t'applique Payoneer ou ta banque.</small></label>
+        <button class="btn" type="submit">Enregistrer</button>
+      </form>
+      <div class="glass card">
+        <h2>Verrouillage</h2>
+        <p class="hint" id="lock-state"></p>
+        <form id="lock-set" autocomplete="off" class="stack">
+          <label class="field">Nouveau mot de passe<input type="password" name="p1" minlength="8" autocomplete="new-password" required></label>
+          <label class="field">Confirmer<input type="password" name="p2" minlength="8" autocomplete="new-password" required></label>
+          <button class="btn" type="submit" id="lock-set-btn">Activer le chiffrement</button>
+        </form>
+        <button class="btn ghost" type="button" id="lock-off" hidden>Désactiver le chiffrement</button>
+        <p class="hint warn-txt">Si tu oublies ce mot de passe, tes données chiffrées sont perdues. Garde une sauvegarde.</p>
+      </div>
+      <div class="glass card">
+        <h2>Données</h2>
+        <p class="hint" id="data-state"></p>
+        <div class="stack">
+          <button class="btn" type="button" id="btn-export2">Télécharger une sauvegarde</button>
+          <label class="btn ghost" for="file-import">Importer une sauvegarde</label>
+          <button class="btn danger" type="button" id="btn-wipe">Effacer toutes les données</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Bouton d'ajout rapide -->
+<button class="fab" id="fab" type="button" aria-label="Ajouter" title="Ajouter (touche N)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+<div class="fab-menu glass" id="fab-menu" hidden>
+  <button data-new="revenus">Revenu</button><button data-new="depenses">Dépense</button><button data-new="projets">Projet client</button><button data-new="pipeline">Opportunité</button><button data-new="taches">Tâche</button><button data-new="plateformes">Plateforme</button>
+</div>
+
+<!-- Fenêtre d'ajout / modification -->
+<dialog class="modal glass" id="modal">
+  <form id="modal-form" autocomplete="off">
+    <div class="modal-head"><h2 id="modal-title"></h2><button class="icon-btn sm" type="button" id="modal-close" aria-label="Fermer"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body" id="modal-body"></div>
+    <p class="hint" id="modal-note"></p>
+    <div class="modal-foot"><button class="btn ghost" type="button" id="modal-cancel">Annuler</button><button class="btn" type="submit">Enregistrer</button></div>
+  </form>
+</dialog>
+
+<div class="tip" id="tip" hidden></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="blobs.js"></script>
+<script src="crypto.js"></script>
+<script src="app.js"></script>
+<script src="../content/portfolio.js"></script>
+<script src="portfolio-editor.js"></script>
+</body>
+</html>
