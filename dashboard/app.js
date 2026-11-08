@@ -500,6 +500,7 @@
   $("#modal-form").addEventListener("submit", e => {
     e.preventDefault(); if (!editing) return;
     const { name, id } = editing, S = L[name], fd = new FormData(e.target), x = id ? DB[name].find(y => y.id === id) : { id: uid() };
+    const oldPaid = +x.encaisse || 0;
     for (const f of S.f) {
       let v = String(fd.get(f.k) ?? "").trim().slice(0, 300);
       if (f.t === "number") v = Math.min(f.max ?? Infinity, Math.max(0, Number(v.replace(",", ".")) || 0));
@@ -510,13 +511,25 @@
     }
     if (name === "taches" && !id) x.fait = false;
     if (!id) DB[name].push(x);
+    if (name === "projets" && x.statut === "Payé" && +x.montant > (+x.encaisse || 0)) x.encaisse = +x.montant;
     closeModal();
+    const linked = name === "projets" ? linkPayment(x, oldPaid) : false;
     commit(`${id ? "Modifié" : "Ajouté"} : ${S.one} « ${x.nom || x.texte || x.desc || x.source || ""} »`);
-    toast(id ? "Modifié." : "Ajouté.");
+    toast(linked ? "Enregistré, et paiement ajouté aux revenus." : id ? "Modifié." : "Ajouté.");
   });
   $("#modal-close").addEventListener("click", closeModal);
   $("#modal-cancel").addEventListener("click", closeModal);
   modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
+
+  // Un paiement saisi sur un projet devient (si tu confirmes) une ligne de revenu encaissé : les statistiques restent justes.
+  function linkPayment(p, oldPaid) {
+    const delta = Math.round((+p.encaisse || 0) - (oldPaid || 0));
+    if (delta <= 0) return false;
+    if (!confirm(`Ajouter ${F(delta)} aux revenus encaissés aujourd'hui (paiement du projet « ${p.nom} ») ?`)) return false;
+    DB.revenus.push({ id: uid(), date: today(), source: "Client direct", client: p.client || "", desc: `Paiement projet « ${p.nom} »`, montant: delta, devise: "F", statut: "Encaissé", projet: p.id });
+    log(`Revenu ajouté : ${F(delta)} (projet « ${p.nom} »)`);
+    return true;
+  }
 
   // ════════ INTERACTIONS ════════
   const rowCtx = el => { const row = el.closest("[data-id]"), box = el.closest("[data-list]"); return row && box ? { name: box.dataset.list, id: row.dataset.id, row } : null; };
@@ -565,8 +578,9 @@
     if (e.target.matches("[data-edit]")) {
       const f = L[c.name].f.find(f => f.k === e.target.dataset.edit);
       if (!f || !f.o.includes(e.target.value)) return;
+      const oldPaid = +x.encaisse || 0;
       x[f.k] = e.target.value;
-      if (c.name === "projets" && x.statut === "Payé" && +x.montant) { x.encaisse = +x.montant; x.avancement = 100; }
+      if (c.name === "projets" && x.statut === "Payé" && +x.montant) { x.encaisse = +x.montant; x.avancement = 100; linkPayment(x, oldPaid); }
       commit(`${L[c.name].one.replace(/^./, k => k.toUpperCase())} « ${x.nom || x.desc || x.source || ""} » → ${x[f.k]}`);
     } else if (e.target.matches("[data-done]")) { x.fait = e.target.checked; commit(`${x.fait ? "Terminé" : "Rouvert"} : « ${x.texte} »`); }
   });
